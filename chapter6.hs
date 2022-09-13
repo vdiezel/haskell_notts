@@ -31,3 +31,23 @@ merge [] ys  = ys
 merge (x:xs) (y:ys) = if x < y then x : merge xs (y:ys)
                                else y: merge (x:xs) ys
 
+-- insert
+insert :: Int -> [Int] -> [Int]
+insert n []     = [n]
+insert n (x:xs) = if x > n then n:(x:xs) else x:insert n xs
+
+isort :: [Int] -> [Int]
+isort [] = []
+isort (x:xs) = insert x (isort xs)
+
+halve :: [a] -> ([a], [a])
+halve xs = splitAt mid xs
+           where mid = floor (fromIntegral (length xs) / 2)
+
+msort :: [Int] -> [Int]
+msort [] = []
+msort [x] = [x]
+msort xs = merge (msort left) (msort right)
+  where (left, right) = halve xs
+
+
