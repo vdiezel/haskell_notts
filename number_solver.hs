@@ -7,6 +7,12 @@ import System.CPUTime
 
 data Op = Add | Sub | Mul | Div
 
+apply :: Op -> Int -> Int -> Int
+apply Add x y = x + y
+apply Sub x y = x - y
+apply Mul x y = x * y
+apply Div x y = x `div` y
+
 instance Show Op where
   show Add = "+"
   show Sub = "-"
@@ -18,12 +24,6 @@ valid Add _ _ = True
 valid Sub x y = x > y
 valid Mul _ _ = True
 valid Div x y = x `mod` y == 0
-
-apply :: Op -> Int -> Int -> Int
-apply Add x y = x + y
-apply Sub x y = x - y
-apply Mul x y = x * y
-apply Div x y = x `div` y
 
 -- numeric expression
 
@@ -46,4 +46,4 @@ eval (App o l r)   = [apply o x y | x <- eval l,
                                     y <- eval r,
                                     valid o x y]
 
-
+choices :: [a] -> [[a]]
