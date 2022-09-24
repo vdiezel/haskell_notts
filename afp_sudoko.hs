@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Data.List
-import qualified Data.Text as T
+import Data.Maybe
 -- SUDOKU!
 
 type Grid = Matrix Value
@@ -88,3 +88,56 @@ fix f x = if x == x' then x else fix f x'
           where x' = f x
 
 solve3 = filter valid . collapse . fix prune . choices
+
+-- Lecture 3
+-- Blocked matrices!
+-- "void": at least one cell has no choices
+void :: Matrix Choices -> Bool
+void m = any (any null) m
+
+-- safe: when there are no duplicate single entries in a row of choices
+noDuplicates :: Row Choices -> Bool
+noDuplicates [] = True
+noDuplicates (x:xs) = (x `notElem` xs) && noDuplicates xs
+
+consistent :: Row Choices -> Bool
+consistent choices = noDuplicates (filter ((== 1) . length) choices)
+
+safe :: Matrix Choices -> Bool
+safe m = all consistent (rows m)
+          && all consistent (cols m)
+          && all consistent (boxes m)
+
+blocked :: Matrix Choices -> Bool
+blocked m = void m || not (safe m)
+
+single :: [a] -> Bool
+single [_] = True
+single _ = False
+
+updateRow :: Row Choices -> Int -> Value -> Row Choices
+updateRow row colIdx value = map (\ (col, currColIdx) -> if currColIdx == colIdx then [value] else col) (zip row [0..])
+
+collapseCell :: Matrix Choices -> Int -> Int -> Value -> Matrix Choices
+collapseCell m rowIdx colIdx choice = map (\ (row, currRowIdx) -> if currRowIdx == rowIdx then updateRow row colIdx choice else row) (zip m [0..])
+
+expand :: Matrix Choices -> [Matrix Choices]
+-- TODO: implement: expands the first cell that hs multiple options
+expand m = [collapseCell m (fromJust rowIndex) (fromJust colIndex) option | option <- options ]
+           where
+             rowIndex = findIndex (any ((> 1) . length)) m
+             colIndex = findIndex ((> 1) . length) (m !! fromJust rowIndex)
+             options = (m !! fromJust rowIndex) !! fromJust colIndex
+
+
+
+search :: Matrix Choices -> [Grid]
+search m | blocked m = []
+         | all (all single) m = collapse m
+         | otherwise = [g | m' <- expand m, g <- search (prune m')]
+
+solve4 = search . prune . choices
+
+
+test = expand [ [['1', '2', '3'], ['1'], ['2', '3']], [['4'], ['5'], ['6']], [['7'], ['8'], ['9']] ]
+
