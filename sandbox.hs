@@ -9,3 +9,8 @@ removeSingleChars :: [[Char]] -> [Char] -> [[Char]]
 -- removeSingleChars strings [] = strings
 removeSingleChars choices taken = map (filter (not . isTaken taken)) choices
 
+fac 1 = 1
+fac n = n * fac (n - 1)
+
+expansion :: Double -> Double
+expansion x = 1 + foldl (\res curr -> (x ** curr) / fac curr) 1 [1..9]
