@@ -138,8 +138,22 @@ join mmx = do mx <- mmx
 
 -- a -> b vs a -> m b
 
+-- Final Piece
 
+data Expr a = Var a
+  | Val Int
+  | Add (Expr a) (Expr a)
 
+instance Monad Expr where
+  return x = Var x
+  (Var v)   >>= f = f v
+  (Val n)   >>= f = Val n
+  (Add x y) >>= f = Add (x >== f) (y >== f)
+
+f :: Char -> Expr
+
+f 'x' = Add (Val 1) (Val 2)
+f 'y' = Val 3
 
 
 
